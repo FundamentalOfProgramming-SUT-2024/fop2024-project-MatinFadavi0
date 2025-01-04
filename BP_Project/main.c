@@ -1,5 +1,5 @@
 #include<ncurses.h>
-#include "login_menu.h"
+#include "login_game_menu.h"
 
 
 int main() {
