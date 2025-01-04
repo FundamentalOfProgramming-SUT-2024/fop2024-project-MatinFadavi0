@@ -270,44 +270,56 @@ void sign_up() {
 }
 
 
+void sign_in_as_guest() {
+    int row, col;
+    clear();
+    getmaxyx(stdscr, row, col);
+    mvprintw(row / 2 - 2, (col - 25) / 2, "Logged in as Guest!");
+    mvprintw(row / 2, (col - 30) / 2, "Press any key to continue...");
+    getch();
+    // Continue to the game or main interface from here.
+    // For now, it will simply return to the menu.
+}
+
 void draw_menu() {
-    char *choices[] = {"Sign In", "Sign Up", "Exit"};
+    char *choices[] = {"Sign In", "Sign Up", "Sign In as Guest", "Exit"};
     int choice, highlight = 0;
     int row, col;
     curs_set(0);
     while (1) {
         clear();
         getmaxyx(stdscr, row, col);
-    mvprintw(LINES / 2 - 12, COLS / 2 - 23, " ____                                      ");
-    mvprintw(LINES / 2 - 11, COLS / 2 - 23, "/\\  _`\\                                    ");
-    mvprintw(LINES / 2 - 10, COLS / 2 - 23, "\\ \\ \\L\\ \\    ___      __   __  __     __   ");
-    mvprintw(LINES / 2 - 9, COLS / 2 - 23, " \\ \\ ,  /   / __`\\  /'_ `\\/\\ \\/\\ \\  /'__`\\ ");
-    mvprintw(LINES / 2 - 8, COLS / 2 - 23, "  \\ \\ \\\\ \\ /\\ \\L\\ \\/\\ \\L\\ \\ \\ \\_\\ \\/\\  __/ ");
-    mvprintw(LINES / 2 - 7, COLS / 2 - 23, "   \\ \\_\\ \\_\\ \\____/\\ \\____ \\ \\____/\\ \\____\\");
-    mvprintw(LINES / 2 - 6, COLS / 2 - 23, "    \\/_/\\/ /\\/___/  \\/___L\\ \\/___/  \\/____/");
-    mvprintw(LINES / 2 - 5, COLS / 2 - 23, "                      /\\____/              ");
-    mvprintw(LINES / 2 - 4, COLS / 2 - 23, "                      \\_/__/               ");
+        mvprintw(LINES / 2 - 12, COLS / 2 - 23, " ____                                      ");
+        mvprintw(LINES / 2 - 11, COLS / 2 - 23, "/\\  _`\\                                    ");
+        mvprintw(LINES / 2 - 10, COLS / 2 - 23, "\\ \\ \\L\\ \\    ___      __   __  __     __   ");
+        mvprintw(LINES / 2 - 9, COLS / 2 - 23, " \\ \\ ,  /   / __`\\  /'_ `\\/\\ \\/\\ \\  /'__`\\ ");
+        mvprintw(LINES / 2 - 8, COLS / 2 - 23, "  \\ \\ \\\\ \\ /\\ \\L\\ \\/\\ \\L\\ \\ \\ \\_\\ \\/\\  __/ ");
+        mvprintw(LINES / 2 - 7, COLS / 2 - 23, "   \\ \\_\\ \\_\\ \\____/\\ \\____ \\ \\____/\\ \\____\\");
+        mvprintw(LINES / 2 - 6, COLS / 2 - 23, "    \\/_/\\/ /\\/___/  \\/___L\\ \\/___/  \\/____/");
+        mvprintw(LINES / 2 - 5, COLS / 2 - 23, "                      /\\____/              ");
+        mvprintw(LINES / 2 - 4, COLS / 2 - 23, "                      \\_/__/               ");
         
         // Display choices at the bottom
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             if (i == highlight)
                 attron(A_REVERSE);
-            mvprintw(row - 4 + i, (col - 10) / 2, choices[i]);
+            mvprintw(row - 4 + i, (col - 20) / 2, choices[i]);
             if (i == highlight)
                 attroff(A_REVERSE);
         }
         choice = getch();
         switch (choice) {
             case KEY_UP:
-                highlight = (highlight + 2) % 3;
+                highlight = (highlight + 3) % 4;
                 break;
             case KEY_DOWN:
-                highlight = (highlight + 1) % 3;
+                highlight = (highlight + 1) % 4;
                 break;
             case '\n':
                 curs_set(1);
                 if (highlight == 0) sign_in();
                 else if (highlight == 1) sign_up();
+                else if (highlight == 2) sign_in_as_guest();
                 else return;
                 curs_set(0);
                 break;
@@ -316,4 +328,5 @@ void draw_menu() {
         }
     }
 }
+
 
