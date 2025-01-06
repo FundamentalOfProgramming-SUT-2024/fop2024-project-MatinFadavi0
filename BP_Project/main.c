@@ -1,5 +1,5 @@
 #include<ncurses.h>
-#include "login_game_menu.h"
+#include "header.h"
 
 
 int main() {
@@ -7,8 +7,14 @@ int main() {
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
+    start_color();
 
-    load_users();
+//    load_users();
+
+    User p;
+    Game g;
+    g.difficulty = 0; g.player_color = 0;
+
     draw_menu();
 
     endwin();

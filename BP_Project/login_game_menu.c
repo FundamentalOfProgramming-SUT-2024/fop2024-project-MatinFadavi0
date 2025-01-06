@@ -5,38 +5,31 @@
 #include <time.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include "login_game_menu.h"
+#include "header.h"
 
-#define MAX_USERS 100
-#define MAX_LENGTH 50
 
-typedef struct {
-    char username[MAX_LENGTH];
-    char password[MAX_LENGTH];
-    char email[MAX_LENGTH];
-} User;
+// void load_users(User *p) {
+//     FILE *file = fopen("users.txt", "r");
+//     if (file != NULL) {
+//         while (fscanf(file, "%s\n%s\n%s\n", p->username, p->password, p->email) != EOF) {
+//         }
+//         fclose(file);
+//     }
+// }
 
-User users[MAX_USERS];
-int user_count = 0;
+void save_users(User *p) {
+    FILE *file = fopen("users.txt", "a");
 
-void load_users() {
-    FILE *file = fopen("users.txt", "r");
-    if (file != NULL) {
-        while (fscanf(file, "%s %s %s", users[user_count].username, users[user_count].password, users[user_count].email) != EOF) {
-            user_count++;
-        }
-        fclose(file);
+    if (file == NULL) {
+        printf("Unable to open the file!\n");
+        return;
     }
-}
+    p->score = 0;
+    p->gold = 0;
+    p->count_games = 0;
+    fprintf(file, "%s\n%s\n%s\n%d\n%d\n%d\n", p->username, p->password, p->email, p->score, p->gold, p->count_games);
 
-void save_users() {
-    FILE *file = fopen("users.txt", "w");
-    if (file != NULL) {
-        for (int i = 0; i < user_count; i++) {
-            fprintf(file, "%s %s %s\n", users[i].username, users[i].password, users[i].email);
-        }
-        fclose(file);
-    }
+    fclose(file);
 }
 
 int validate_email(const char *email) {
@@ -59,7 +52,8 @@ int valid_password(const char *password) {
     return has_upper && has_lower && has_digit;
 }
 
-void forgot_password() {
+
+void forgot_password(User *p) {
     char email[MAX_LENGTH] = "";
     int row, col;
     int found = 0;
@@ -76,24 +70,46 @@ void forgot_password() {
         getstr(email);
         noecho();
 
-        // Check if email exists
-        for (int i = 0; i < user_count; i++) {
-            if (strcmp(users[i].email, email) == 0) {
-                mvprintw(row / 2 + 4, (col - 30) / 2, "Your password is: %s", users[i].password);
-                found = 1;
-                break;
+
+        FILE *file = fopen("users.txt", "r");
+        if (file == NULL) {
+            mvprintw(row / 2 + 4, (col - 30) / 2, "Unable to open users file!");
+            getch();
+            return;
+        }
+
+        while (fgets(p->username, MAX_LENGTH, file) != NULL) {
+
+            p->username[strcspn(p->username, "\n")] = '\0';
+
+
+            if (fgets(p->password, MAX_LENGTH, file) != NULL) {
+                p->password[strcspn(p->password, "\n")] = '\0';
+
+                if (fgets(p->email, MAX_LENGTH, file) != NULL) {
+                    p->email[strcspn(p->email, "\n")] = '\0';
+
+                    if (strcmp(p->email, email) == 0) {
+                        mvprintw(row / 2 + 4, (col - 30) / 2, "Your password is: %s", p->password);
+                        found = 1;
+                        break;
+                    }
+                }
             }
         }
+
         if (!found) {
             mvprintw(row / 2 + 4, (col - 30) / 2, "Email not found!");
         }
 
+        fclose(file);
         getch();
         return;
     }
 }
 
-void sign_in() {
+
+void sign_in(User *p, Game *g) {
     char username[MAX_LENGTH] = "";
     char password[MAX_LENGTH] = "";
     int highlight = 0;
@@ -144,21 +160,38 @@ void sign_in() {
                     getstr(password);
                     noecho();
                 } else if (highlight == 2) {  // Forgot Password
-                    forgot_password();
+                    forgot_password(p);
                     return;
                 } else if (highlight == 3) {  // Submit
                     int found = 0;
-                    for (int i = 0; i < user_count; i++) {
-                        if (strcmp(users[i].username, username) == 0 && strcmp(users[i].password, password) == 0) {
-                            mvprintw(row / 2 + 4, (col - 25) / 2, "Login successful!");
-                            pre_game_menu();
-                            found = 1;
-                            break;
+                    FILE *file = fopen("users.txt", "r");
+                    if (file == NULL) {
+                        mvprintw(row / 2 + 4, (col - 30) / 2, "Unable to open users file!");
+                        getch();
+                        return;
+                    }
+
+                    while (fgets(p->username, MAX_LENGTH, file) != NULL) {
+
+                        p->username[strcspn(p->username, "\n")] = '\0';
+                        
+                        if (fgets(p->password, MAX_LENGTH, file) != NULL) {
+
+                            p->password[strcspn(p->password, "\n")] = '\0';
+
+                            if (strcmp(p->username, username) == 0 && strcmp(p->password, password) == 0) {
+                                mvprintw(row / 2 + 4, (col - 25) / 2, "Login successful!");
+                                getchar();
+                                pre_game_menu(p, g);
+                                found = 1;
+                                break;
+                            }
                         }
                     }
                     if (!found) {
                         mvprintw(row / 2 + 4, (col - 30) / 2, "Invalid username or password!");
                     }
+                    fclose(file);
                     getch();
                     return;
                 }
@@ -171,7 +204,7 @@ void sign_in() {
     }
 }
 
-void sign_up() {
+void sign_up(User *p, Game *g) {
     char username[MAX_LENGTH] = "";
     char password[MAX_LENGTH] = "";
     char email[MAX_LENGTH] = "";
@@ -242,23 +275,21 @@ void sign_up() {
                         getch();
                     } else {
                         int exists = 0;
-                        for (int i = 0; i < user_count; i++) {
-                            if (strcmp(users[i].username, username) == 0) {
+
+                            if (strcmp(p->username, username) == 0) {
                                 exists = 1;
-                                break;
                             }
-                        }
+                        
                         if (exists) {
                             mvprintw(row / 2 + 4, (col - 30) / 2, "Username already exists!");
                             getch();
                         } else {
-                            strcpy(users[user_count].username, username);
-                            strcpy(users[user_count].password, password);
-                            strcpy(users[user_count].email, email);
-                            user_count++;
-                            save_users();
+                            strcpy(p->username, username);
+                            strcpy(p->password, password);
+                            strcpy(p->email, email);
+                            save_users(p);
                             mvprintw(row / 2 + 4, (col - 30) / 2, "User registered successfully!");
-                            pre_game_menu();
+                            pre_game_menu(p,g);
                             return;
                             
                         }
@@ -273,17 +304,17 @@ void sign_up() {
     }
 }
 
-void sign_in_as_guest() {
+void sign_in_as_guest(User *p, Game *g) {
     int row, col;
     clear();
     getmaxyx(stdscr, row, col);
     mvprintw(row / 2 - 2, (col - 25) / 2, "Logged in as Guest!");
     mvprintw(row / 2, (col - 30) / 2, "Press any key to continue...");
     getch();
-    pre_game_menu();
+    pre_game_menu(p,g);
 }
 
-void draw_menu() {
+void draw_menu(User *p, Game *g) {
     char *choices[] = {"Sign In", "Sign Up", "Sign In as Guest", "Exit"};
     int choice, highlight = 0;
     int row, col;
@@ -319,9 +350,9 @@ void draw_menu() {
                 break;
             case '\n':
                 curs_set(1);
-                if (highlight == 0) sign_in();
-                else if (highlight == 1) sign_up();
-                else if (highlight == 2) sign_in_as_guest();
+                if (highlight == 0) sign_in(p,g);
+                else if (highlight == 1) sign_up(p,g);
+                else if (highlight == 2) sign_in_as_guest(p,g);
                 else return;
                 curs_set(0);
                 break;
@@ -331,7 +362,7 @@ void draw_menu() {
     }
 }
 
-void pre_game_menu() {
+void pre_game_menu(User *p, Game *g) {
     char *choices[] = {"New Game", "Continue Previous Game", "Leaderboard", "Settings", "Back"};
     int highlight = 0, choice, row, col;
 
@@ -372,13 +403,13 @@ void pre_game_menu() {
                 break;
             case '\n':
                 if (highlight == 0) {  // New Game
-                    start_new_game();
+                    start_new_game(p,g);
                 } else if (highlight == 1) {  // Continue Previous Game
-                    continue_previous_game();
+                    continue_previous_game(p,g);
                 } else if (highlight == 2) {  // Leaderboard
-                    display_leaderboard();
+                    display_leaderboard(p,g);
                 } else if (highlight == 3) {  // Settings
-                    settings_menu();
+                    settings_menu(p,g);
                 } else if (highlight == 4) {  // Back
                     return;
                 }
@@ -392,16 +423,16 @@ void pre_game_menu() {
 }
 
 
-void start_new_game() {
+void start_new_game(User *p , Game *g) {
     int row, col;
     clear();
     getmaxyx(stdscr, row, col);
     mvprintw(row / 2 - 2, (col - 25) / 2, "Starting a new game...");
     mvprintw(row / 2, (col - 30) / 2, "Press any key to continue...");
     getch();
-    //SAMPLE
+    //game_launcher(p,g);
 }
-void continue_previous_game(){
+void continue_previous_game(User *p , Game *g){
     int row, col;
     clear();
     getmaxyx(stdscr, row, col);
@@ -411,33 +442,104 @@ void continue_previous_game(){
     //SAMPLE
     
 }
-void display_leaderboard(){
-    int row, col;
+
+                                                                        void sort(int *arr, int scores[], int size) {
+                                                                            for(int i=0; i<size-1; i++) {
+                                                                                for(int j=i+1; j<size; j++) {
+                                                                                    if(scores[i] < scores[j]) {
+                                                                                        int temp = *(arr+i);
+                                                                                        *(arr+i) = *(arr+j);
+                                                                                        *(arr+j) = temp;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+
+                                                                        int str_to_num (char *str) {
+                                                                        
+                                                                            int num = 0;
+                                                                            int p = strlen(str)-1;
+                                                                            for(p; p>=0; p--) {
+                                                                                num = num*10 + (str[strlen(str)-p-1]-'0');
+                                                                            }
+                                                                            
+                                                                            return num;
+                                                                        }                                                                        
+void display_leaderboard(User *p , Game *g){
     clear();
-    getmaxyx(stdscr, row, col);
-    mvprintw(row / 2 - 8, (col - 25) / 2, "Leaderboard");
-    mvprintw(row - 2, 2, "Press any key to go back");
+    init_pair(1, COLOR_BLACK, COLOR_CYAN);
+    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(3, COLOR_MAGENTA, COLOR_BLACK);
 
+    attron(COLOR_PAIR(1));
+    mvprintw(1, 1, "SCORE BOARD");
+    attroff(COLOR_PAIR(1));
+    mvprintw(1, 20, "Press any key to RETURN");
+    mvprintw(3, 1, "RANK"); mvprintw(3, 10, "username"); mvprintw(3, 24, "score"); mvprintw(3, 35, "gold"); mvprintw(3, 44, "gamecounts"); mvprintw(3, 58, "exp");
 
-    // SAMPLE
-    mvprintw(row / 2, col / 2 - 10, "Rank | Username   | Score");
-    mvprintw(row / 2 + 2, col / 2 - 10, "1    | Player1    | 1000");
-    mvprintw(row / 2 + 3, col / 2 - 10, "2    | Player2    | 800");
-    mvprintw(row / 2 + 4, col / 2 - 10, "3    | Player3    | 750");
-    getch();
+    char usernames[10][50]; int scores[10]; int golds[10]; int game_counts[10]; int exps[10] = {0};
+    int arr[] = {0,1,2,3,4,5,6,7,8,9};
+    int *ptr_arr = arr;
 
-    // THIS IS FOR NOW..... LATER I AM GONNA READ SCOREBOARD FROM FILE
+    FILE *fptr;
+    fptr = fopen("users.txt","r");
+    char line[50]; int i = 0; int count = 0;
+    while(fgets(line, 50, fptr) != NULL) {
+        line[strcspn(line,"\n")] = '\0';
+        if(i%6 == 0) {
+            if(i != 0) {
+                count++;
+            }
+            strcpy(usernames[count],line);
+        }
+        else if(i%6 == 3) {
+            scores[count] = str_to_num(line);
+        }
+        else if(i%6 == 4) {
+            golds[count] = str_to_num(line);
+        }
+        else if(i%6 == 5) {
+            game_counts[count] = str_to_num(line);
+        }
+        i++;
+    }
+    fclose(fptr);
+
+    sort(ptr_arr, scores, (count%10)+1);
+    for(int i=0; i<=count; i++) {
+        if(0<=i && i<=2) {
+            attron(COLOR_PAIR(3));
+            mvprintw(5+i, 66, "BEST PLAYER");
+            attroff(COLOR_PAIR(3));
+            attron(COLOR_PAIR(2));
+        }
+        else{
+            attroff(COLOR_PAIR(2));
+        }
+        if(strcmp(p->username,usernames[arr[i]]) == 0) {
+            mvprintw(5+i, 1, "-> %d", i+1); mvprintw(5+i, 10, "%s", usernames[arr[i]]); mvprintw(5+i, 24, "%d", scores[arr[i]]); mvprintw(5+i, 35, "%d", golds[arr[i]]); mvprintw(5+i, 44, "%d", game_counts[arr[i]]); mvprintw(5+i, 58, "%d", exps[arr[i]]);
+        }
+        else {
+            mvprintw(5+i, 1, "%d", i+1); mvprintw(5+i, 10, "%s", usernames[arr[i]]); mvprintw(5+i, 24, "%d", scores[arr[i]]); mvprintw(5+i, 35, "%d", golds[arr[i]]); mvprintw(5+i, 44, "%d", game_counts[arr[i]]); mvprintw(5+i, 58, "%d", exps[arr[i]]);
+        }
+        
+    }
+
+    char ch = getch();
+
+    clear();
 }
-void change_difficulty(){
-    char *difficulties[] = {"Easy", "Medium", "Hard"};
+void change_difficulty(User *p, Game *g) {
+    char *difficulties[] = {"Easy", "Hard"};
     int highlight = 0, choice, row, col;
+
     while (1) {
         clear();
         getmaxyx(stdscr, row, col);
         mvprintw(row / 2 - 8, (col - 20) / 2, "Select Difficulty");
         mvprintw(row - 2, 2, "Press 'ESC' to go back");
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             if (i == highlight)
                 attron(A_REVERSE);
             mvprintw(row / 2 - 4 + i * 2, (col - 15) / 2, difficulties[i]);
@@ -448,17 +550,17 @@ void change_difficulty(){
         choice = getch();
         switch (choice) {
             case KEY_UP:
-                highlight = (highlight + 2) % 3;
+                highlight = (highlight + 1) % 2;
                 break;
             case KEY_DOWN:
-                highlight = (highlight + 1) % 3;
+                highlight = (highlight + 1) % 2;
                 break;
             case '\n':
+                g->difficulty = highlight;
                 mvprintw(row / 2 + 4, (col - 30) / 2, "Difficulty set to %s!", difficulties[highlight]);
-                // Save the Choice in File Later!
                 getch();
                 return;
-            case 27:  // ESC key
+            case 27:
                 return;
             default:
                 break;
@@ -466,16 +568,18 @@ void change_difficulty(){
     }
 }
 
-void change_character_color() {
-    char *colors[] = {"Red", "Green", "Blue", "Yellow", "White"};
+
+void change_character_color(User *p, Game *g) {
+    char *colors[] = {"White", "Blue", "Red", "Green"};
     int highlight = 0, choice, row, col;
+
     while (1) {
         clear();
         getmaxyx(stdscr, row, col);
         mvprintw(row / 2 - 8, (col - 25) / 2, "Select Character Color");
         mvprintw(row - 2, 2, "Press 'ESC' to go back");
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             if (i == highlight)
                 attron(A_REVERSE);
             mvprintw(row / 2 - 4 + i * 2, (col - 20) / 2, colors[i]);
@@ -486,23 +590,24 @@ void change_character_color() {
         choice = getch();
         switch (choice) {
             case KEY_UP:
-                highlight = (highlight + 4) % 5;
+                highlight = (highlight + 3) % 4;
                 break;
             case KEY_DOWN:
-                highlight = (highlight + 1) % 5;
+                highlight = (highlight + 1) % 4;
                 break;
             case '\n':
+                g->player_color = highlight;
                 mvprintw(row / 2 + 4, (col - 30) / 2, "Character color set to %s!", colors[highlight]);
-                // Save The Colors In File later!
                 getch();
                 return;
-            case 27:  // ESC key
+            case 27:
                 return;
             default:
                 break;
         }
     }
 }
+
 
 void select_music() {
     char *tracks[] = {"Track 1", "Track 2", "Track 3", "No Music"};
@@ -590,7 +695,7 @@ void select_music() {
 
 
 
-void settings_menu() {
+void settings_menu(User *p, Game *g) {
     char *settings[] = {"Change Difficulty", "Change Character Color", "Select Music", "Back"};
     int highlight = 0, choice, row, col;
     while (1) {
@@ -617,15 +722,15 @@ void settings_menu() {
                 break;
             case '\n':
                 if (highlight == 0)
-                    change_difficulty();
+                    change_difficulty(p,g);
                 else if (highlight == 1)
-                    change_character_color();
+                    change_character_color(p,g);
                 else if (highlight == 2)
                     select_music();
                 else
                     return;
                 break;
-            case 27:  // ESC key
+            case 27: 
                 return;
             default:
                 break;
