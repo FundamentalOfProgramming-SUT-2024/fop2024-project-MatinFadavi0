@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -lncurses -lSDL2 -lSDL2_mixer
 TARGET = my_project
 
-SRCS = main.c login_game_menu.c
+SRCS = main.c login_game_menu.c game.c
 OBJS = $(SRCS:.c=.o)
 
 $(TARGET): $(OBJS)

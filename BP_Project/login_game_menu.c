@@ -1,21 +1,4 @@
-#include <ncurses.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <time.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
 #include "header.h"
-
-
-// void load_users(User *p) {
-//     FILE *file = fopen("users.txt", "r");
-//     if (file != NULL) {
-//         while (fscanf(file, "%s\n%s\n%s\n", p->username, p->password, p->email) != EOF) {
-//         }
-//         fclose(file);
-//     }
-// }
 
 void save_users(User *p) {
     FILE *file = fopen("users.txt", "a");
@@ -308,9 +291,6 @@ void sign_in_as_guest(User *p, Game *g) {
     int row, col;
     clear();
     getmaxyx(stdscr, row, col);
-    mvprintw(row / 2 - 2, (col - 25) / 2, "Logged in as Guest!");
-    mvprintw(row / 2, (col - 30) / 2, "Press any key to continue...");
-    getch();
     pre_game_menu(p,g);
 }
 
@@ -322,6 +302,8 @@ void draw_menu(User *p, Game *g) {
     while (1) {
         clear();
         getmaxyx(stdscr, row, col);
+        init_pair(1, COLOR_YELLOW,-1);
+        attron(COLOR_PAIR(1));
         mvprintw(LINES / 2 - 12, COLS / 2 - 23, " ____                                      ");
         mvprintw(LINES / 2 - 11, COLS / 2 - 23, "/\\  _`\\                                    ");
         mvprintw(LINES / 2 - 10, COLS / 2 - 23, "\\ \\ \\L\\ \\    ___      __   __  __     __   ");
@@ -331,7 +313,7 @@ void draw_menu(User *p, Game *g) {
         mvprintw(LINES / 2 - 6, COLS / 2 - 23, "    \\/_/\\/ /\\/___/  \\/___L\\ \\/___/  \\/____/");
         mvprintw(LINES / 2 - 5, COLS / 2 - 23, "                      /\\____/              ");
         mvprintw(LINES / 2 - 4, COLS / 2 - 23, "                      \\_/__/               ");
-        
+        attroff(COLOR_PAIR(1));
         // Display choices at the bottom
         for (int i = 0; i < 4; i++) {
             if (i == highlight)
@@ -363,6 +345,7 @@ void draw_menu(User *p, Game *g) {
 }
 
 void pre_game_menu(User *p, Game *g) {
+    
     char *choices[] = {"New Game", "Continue Previous Game", "Leaderboard", "Settings", "Back"};
     int highlight = 0, choice, row, col;
 
@@ -371,7 +354,9 @@ void pre_game_menu(User *p, Game *g) {
     while (1) {
         clear();
         getmaxyx(stdscr, row, col);
-
+        init_pair(1, COLOR_YELLOW,-1);      
+        
+        attron(COLOR_PAIR(1));
         mvprintw(LINES / 2 - 12, COLS / 2 - 23, " ____                                      ");
         mvprintw(LINES / 2 - 11, COLS / 2 - 23, "/\\  _`\\                                    ");
         mvprintw(LINES / 2 - 10, COLS / 2 - 23, "\\ \\ \\L\\ \\    ___      __   __  __     __   ");
@@ -381,7 +366,7 @@ void pre_game_menu(User *p, Game *g) {
         mvprintw(LINES / 2 - 6, COLS / 2 - 23, "    \\/_/\\/ /\\/___/  \\/___L\\ \\/___/  \\/____/");
         mvprintw(LINES / 2 - 5, COLS / 2 - 23, "                      /\\____/              ");
         mvprintw(LINES / 2 - 4, COLS / 2 - 23, "                      \\_/__/               ");
-
+        attroff(COLOR_PAIR(1));
         mvprintw(row - 2, 2, "Press 'ESC' to go back");
 
 
@@ -430,7 +415,7 @@ void start_new_game(User *p , Game *g) {
     mvprintw(row / 2 - 2, (col - 25) / 2, "Starting a new game...");
     mvprintw(row / 2, (col - 30) / 2, "Press any key to continue...");
     getch();
-    //game_launcher(p,g);
+    GameLauncher(p,g);
 }
 void continue_previous_game(User *p , Game *g){
     int row, col;
@@ -442,7 +427,6 @@ void continue_previous_game(User *p , Game *g){
     //SAMPLE
     
 }
-
                                                                         void sort(int *arr, int scores[], int size) {
                                                                             for(int i=0; i<size-1; i++) {
                                                                                 for(int j=i+1; j<size; j++) {
@@ -470,11 +454,10 @@ void display_leaderboard(User *p , Game *g){
     init_pair(1, COLOR_BLACK, COLOR_CYAN);
     init_pair(2, COLOR_YELLOW, COLOR_BLACK);
     init_pair(3, COLOR_MAGENTA, COLOR_BLACK);
-
-    attron(COLOR_PAIR(1));
+    int row,col;
+    getmaxyx(stdscr, row, col);
     mvprintw(1, 1, "SCORE BOARD");
-    attroff(COLOR_PAIR(1));
-    mvprintw(1, 20, "Press any key to RETURN");
+    mvprintw(row - 2, 2, "Press any key to go back");
     mvprintw(3, 1, "RANK"); mvprintw(3, 10, "username"); mvprintw(3, 24, "score"); mvprintw(3, 35, "gold"); mvprintw(3, 44, "gamecounts"); mvprintw(3, 58, "exp");
 
     char usernames[10][50]; int scores[10]; int golds[10]; int game_counts[10]; int exps[10] = {0};
