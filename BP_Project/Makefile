@@ -1,12 +1,16 @@
 CC = gcc
-CFLAGS = -lncurses -lSDL2 -lSDL2_mixer
+CFLAGS = -Wall -Wextra
+LDFLAGS = -lSDL2 -lSDL2_mixer -lncursesw
 TARGET = my_project
 
 SRCS = main.c login_game_menu.c game.c
 OBJS = $(SRCS:.c=.o)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS) $(TARGET)

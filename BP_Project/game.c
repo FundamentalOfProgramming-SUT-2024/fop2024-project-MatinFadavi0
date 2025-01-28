@@ -516,7 +516,7 @@ void ShowHealth(Game *g) {
     int count_hearts = g->players_health;
     attron(COLOR_PAIR(2));
     for(int i=0; i<count_hearts; i++) {
-        mvprintw(0, COLS-2*g->MAX_health-1+2*i, "<3");
+        mvprintw(0, COLS-2*g->MAX_health-1+2*i, "\u2764");
     }
     attroff(COLOR_PAIR(2));
     mvprintw(0, COLS-1, "]");
