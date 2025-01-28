@@ -1,4 +1,9 @@
-#include "header.h"
+#include "libs.h"
+#include "map.h"
+#include "game_menu.h"
+#include "auth.h"
+#include "player.h"
+
 
 int main() {
     setlocale(LC_ALL, "");
@@ -15,8 +20,7 @@ int main() {
     Game *g = (Game *) malloc(sizeof(Game));
    
     g->difficulty = 0; g->player_color = 0;
-    // p->score = 0;
-    // p->gold = 0;
+
     draw_menu(p,g);
 
     endwin();

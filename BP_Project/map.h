@@ -1,30 +1,9 @@
-#ifndef HEADER_H
-#define HEADER_H
+#ifndef MAP_H
+#define MAP_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <ncurses.h>
-#include <string.h>
-#include <math.h>
-#include <ctype.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
-#include <locale.h>
+#include "player.h"
+#include "libs.h"
 
-#define MAX_USERS 100
-#define MAX_LENGTH 50
-
-typedef struct {
-    char username[MAX_LENGTH];
-    char password[MAX_LENGTH];
-    char email[MAX_LENGTH];
-    int score;
-    int gold;
-    int count_games;
-    int experience;
-    int guest;
-} User;
 
 typedef struct {
     int x;
@@ -45,6 +24,7 @@ typedef struct {
     int ordinary_food;
 } Room;
 
+
 typedef struct {
     User Player;
     int difficulty;
@@ -60,23 +40,6 @@ typedef struct {
     int players_ordinary_food;
     time_t start_time;
 } Game;
-
-void draw_menu();
-void sign_in();
-void sign_up();
-void forgot_password();
-void load_users();
-void save_users();
-
-void pre_game_menu();
-void start_new_game();
-void continue_previous_game();
-void display_leaderboard();
-
-void settings_menu();
-void change_difficulty();
-void change_character_color();
-void select_music();
 
 void GameLauncher(User *p, Game *g);
 void map(Game *g, int initial_room);
@@ -94,4 +57,5 @@ void Save_Game(User *p, Game *g, char **screen);
 void save_screen(User *p , Game *g);
 void not_saved_screen();
 void food_screen(Game *g);
+
 #endif

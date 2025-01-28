@@ -1,56 +1,9 @@
-#include "header.h"
+#include "libs.h"
+#include "player.h"
+#include "map.h"
+#include "game_menu.h"
+#include "funcs.h"
 
-int power(int num, int n) {
-    if(n==0) {
-        return 1;
-    }
-    if(n==1) {
-        return num;
-    }
-    for(int i=2; i<=n; i++) {
-        num *= num;
-    }
-    return num;
-}
-
-const char *txt_format(char username[]) {
-    char *file_name = (char *) malloc(50*sizeof(char));
-    strcpy(file_name,username);
-    file_name[strlen(username)] = '.'; file_name[strlen(username)+1] = 't';
-    file_name[strlen(username)+2] = 'x'; file_name[strlen(username)+3] = 't'; file_name[strlen(username)+4] = 0;
-    return file_name;
-}
-
-void GameLauncher(User *p, Game *g) {
-    clear();
-    init_pair(0, COLOR_WHITE, COLOR_BLACK);
-    init_pair(1, COLOR_BLUE, COLOR_BLACK);
-    init_pair(2, COLOR_RED, COLOR_BLACK);
-    init_pair(3, COLOR_GREEN, COLOR_BLACK);
-    init_pair(4, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
-
-    if(g->difficulty) {
-        g->MAX_health = 5;
-    }
-    else {
-        g->MAX_health = 10;
-    }
-    g->players_health = g->MAX_health;
-    g->players_score = 0;
-    g->players_gold = 0;
-    g->floor_number = 1;
-    g->players_hungriness = 0;
-    g->players_ordinary_food = 0;
-    g->start_time = time(NULL);
-
-    p->count_games++;
-
-    FloorGenerator(p, g);
-    
-
-    clear();
-}
 
 void FloorGenerator(User *p, Game *g) {
     clear();
@@ -239,6 +192,15 @@ void FloorGenerator(User *p, Game *g) {
     while(1) {
         ShowMessage("Welcome to the game!", g->floor_number, g->players_score, g->players_gold);
         ShowHealth(g);
+        mvprintw(0, 80, "                                           ");
+        mvprintw(0, 80, "Hungriness: [");
+        attron(COLOR_PAIR(3));
+        for(int i=0; i<g->players_hungriness; i++) {
+            mvprintw(0, 93+2*i, "🍕");
+        }
+        attroff(COLOR_PAIR(3));
+        mvprintw(0, 111, "]");
+        
         time_t current_time = time(NULL);
         double elapsed_time = difftime(current_time, g->start_time);
         if(elapsed_time > 30) {
@@ -285,6 +247,14 @@ void FloorGenerator(User *p, Game *g) {
                 g->floor_number += 1;
                 FloorGenerator(p,g);
                 break;
+        }
+    }
+}
+
+int check_room(Room *rooms, int i, int j) {
+    for(int k=0; k<6; k++) {
+        if(abs(i-rooms[k].room_pos.x) <= rooms[k].room_size_h && abs(j-rooms[k].room_pos.y) <= rooms[k].room_size_v) {
+            return k;
         }
     }
 }
@@ -639,14 +609,6 @@ void ShowScreen(char mode[], int **visited, char **screen) {
     }   
 }
 
-int check_room(Room *rooms, int i, int j) {
-    for(int k=0; k<6; k++) {
-        if(abs(i-rooms[k].room_pos.x) <= rooms[k].room_size_h && abs(j-rooms[k].room_pos.y) <= rooms[k].room_size_v) {
-            return k;
-        }
-    }
-}
-
 void ShowMessage(char message[], int floor, int score, int gold) {
     mvprintw(0,0,"%s FLOOR:%d   SCORE:%d    GOLD:%d", message, floor, score, gold);
 }
@@ -737,12 +699,10 @@ void not_saved_screen() {
 void food_screen(Game *g) {
     clear();
 
-    attron(COLOR_PAIR(3));
+    attron(COLOR_PAIR(5));
     mvprintw(0, 1, "FOOD MENU");
-    attroff(COLOR_PAIR(3));
-
-    mvprintw(0, 20, "Choose a food to consume it");    
-
+    attroff(COLOR_PAIR(5));
+   
     const char *foods[] = {"Ordinary FOODS", "Super FOODS", "Magical FOODS", "Rotten FOODS", "RETURN"};
 
     int choose = 0;
@@ -750,11 +710,11 @@ void food_screen(Game *g) {
         ShowHealth(g);
         mvprintw(10, 8, "                                           ");
         mvprintw(10, 8, "Hungriness: [");
-        attron(COLOR_PAIR(2));
+        attron(COLOR_PAIR(3));
         for(int i=0; i<g->players_hungriness; i++) {
-            mvprintw(10, 21+2*i, "**");
+            mvprintw(10, 21+2*i, "🍕");
         }
-        attroff(COLOR_PAIR(2));
+        attroff(COLOR_PAIR(3));
         mvprintw(10, 41, "]");
         for (int i=0; i<5; i++) {
             if (i == choose)
