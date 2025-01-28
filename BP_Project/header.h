@@ -22,6 +22,7 @@ typedef struct {
     int gold;
     int count_games;
     int experience;
+    int guest;
 } User;
 
 typedef struct {

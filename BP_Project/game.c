@@ -265,8 +265,13 @@ void FloorGenerator(User *p, Game *g) {
 
         int ch = getch();
         if(ch == 'q') {
+            if ( !p->guest ){
             Save_Game(p,g,screen);
             save_screen(p,g);
+            }
+            else{
+                pre_game_menu(p,g);
+            }
         }
         else if(ch == 'm') {
             display_whole++;
@@ -693,18 +698,13 @@ void ExitScreen(User *p) {
     mvprintw(LINES/2,COLS/2-4,"GAME OVER!");
     attroff(COLOR_PAIR(1));
 
-    mvprintw(LINES/2+2,COLS/2-20,"Press Q to EXIT or S to view the SCOREBOARD");
+    mvprintw(LINES/2+1,COLS/2-8,"Press any key to EXIT");
 
-    int ch = getch();
+    getch();
 
-    if(ch == 'q') {
-        endwin();
-        exit(0);
-    }
-    else if(ch == 's') {
-        display_leaderboard(p);
-    }
-    ExitScreen(p);
+    endwin();
+    exit(0);
+    
 }
 
 void Save_Game(User *p, Game *g, char **screen) {
@@ -716,15 +716,13 @@ void Save_Game(User *p, Game *g, char **screen) {
 void save_screen(User *p , Game *g) {
     clear();
 
-    init_pair(1, COLOR_BLACK, COLOR_GREEN);
-    attron(COLOR_PAIR(1));
     mvprintw(LINES/2,COLS/2-16,"GAME HAS BEEN SAVED SUCCESSFULLY!");
-    attroff(COLOR_PAIR(1));
+
     mvprintw(LINES/2+3,COLS/2-10,"Press any key to EXIT");
 
     int ch = getch();
     pre_game_menu(p,g);
-    exit(0);
+    //exit(0);
 }
 
 void not_saved_screen() {

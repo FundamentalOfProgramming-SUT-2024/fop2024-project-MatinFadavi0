@@ -1,5 +1,31 @@
 #include "header.h"
 
+
+//FUNCTIONS:
+int str_to_num (char *str) {
+    int num = 0;
+    int p = strlen(str)-1;
+    for(p; p>=0; p--) {
+        num = num*10 + (str[strlen(str)-p-1]-'0');
+    }
+    
+    return num;
+}
+
+void sort(int *arr, int scores[], int size) {
+    for(int i=0; i<size-1; i++) {
+        for(int j=i+1; j<size; j++) {
+            if(scores[i] < scores[j]) {
+                int temp = *(arr+i);
+                *(arr+i) = *(arr+j);
+                *(arr+j) = temp;
+            }
+        }
+    }
+}
+//End
+
+
 void save_users(User *p) {
     FILE *file = fopen("users.txt", "a");
 
@@ -91,10 +117,10 @@ void forgot_password(User *p) {
     }
 }
 
-
 void sign_in(User *p, Game *g) {
     char username[MAX_LENGTH] = "";
     char password[MAX_LENGTH] = "";
+    char score[50]; char gold[50]; char count_games[50];
     int highlight = 0;
     int row, col;
 
@@ -165,7 +191,15 @@ void sign_in(User *p, Game *g) {
                             if (strcmp(p->username, username) == 0 && strcmp(p->password, password) == 0) {
                                 mvprintw(row / 2 + 4, (col - 25) / 2, "Login successful!");
                                 getchar();
+                                p->guest = 0;
+                                strcpy(p->password,password);
+                                fgets(p->email, 50, file);
+                                fgets(score, 50, file); score[strcspn(score, "\n")] = '\0';
+                                fgets(gold, 50, file); gold[strcspn(gold, "\n")] = '\0';
+                                fgets(count_games, 50, file); count_games[strcspn(count_games, "\n")] = '\0';
+                                p->score = str_to_num(score); p->gold = str_to_num(gold); p->count_games = str_to_num(count_games);
                                 pre_game_menu(p, g);
+                                
                                 found = 1;
                                 break;
                             }
@@ -272,6 +306,7 @@ void sign_up(User *p, Game *g) {
                             strcpy(p->email, email);
                             save_users(p);
                             mvprintw(row / 2 + 4, (col - 30) / 2, "User registered successfully!");
+                            p->guest = 0;
                             pre_game_menu(p,g);
                             return;
                             
@@ -291,6 +326,7 @@ void sign_in_as_guest(User *p, Game *g) {
     int row, col;
     clear();
     getmaxyx(stdscr, row, col);
+    p->guest = 1;
     pre_game_menu(p,g);
 }
 
@@ -335,7 +371,7 @@ void draw_menu(User *p, Game *g) {
                 if (highlight == 0) sign_in(p,g);
                 else if (highlight == 1) sign_up(p,g);
                 else if (highlight == 2) sign_in_as_guest(p,g);
-                else return;
+                else{ endwin(); exit(0);}
                 curs_set(0);
                 break;
             default:
@@ -396,11 +432,11 @@ void pre_game_menu(User *p, Game *g) {
                 } else if (highlight == 3) {  // Settings
                     settings_menu(p,g);
                 } else if (highlight == 4) {  // Back
-                    return;
+                    draw_menu(p,g);
                 }
                 break;
             case 27:  // ESC key
-                return;
+                draw_menu(p,g);
             default:
                 break;
         }
@@ -427,36 +463,15 @@ void continue_previous_game(User *p , Game *g){
     //SAMPLE
     
 }
-                                                                        void sort(int *arr, int scores[], int size) {
-                                                                            for(int i=0; i<size-1; i++) {
-                                                                                for(int j=i+1; j<size; j++) {
-                                                                                    if(scores[i] < scores[j]) {
-                                                                                        int temp = *(arr+i);
-                                                                                        *(arr+i) = *(arr+j);
-                                                                                        *(arr+j) = temp;
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-
-                                                                        int str_to_num (char *str) {
-                                                                        
-                                                                            int num = 0;
-                                                                            int p = strlen(str)-1;
-                                                                            for(p; p>=0; p--) {
-                                                                                num = num*10 + (str[strlen(str)-p-1]-'0');
-                                                                            }
-                                                                            
-                                                                            return num;
-                                                                        }                                                                        
+                                                                    
 void display_leaderboard(User *p , Game *g){
     clear();
     init_pair(1, COLOR_BLACK, COLOR_CYAN);
-    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(2, COLOR_RED, COLOR_BLACK);
     init_pair(3, COLOR_MAGENTA, COLOR_BLACK);
     int row,col;
     getmaxyx(stdscr, row, col);
-    mvprintw(1, 1, "SCORE BOARD");
+    mvprintw(1, 1, "LEADERBOARD");
     mvprintw(row - 2, 2, "Press any key to go back");
     mvprintw(3, 1, "RANK"); mvprintw(3, 10, "username"); mvprintw(3, 24, "score"); mvprintw(3, 35, "gold"); mvprintw(3, 44, "gamecounts"); mvprintw(3, 58, "exp");
 
@@ -490,9 +505,21 @@ void display_leaderboard(User *p , Game *g){
 
     sort(ptr_arr, scores, (count%10)+1);
     for(int i=0; i<=count; i++) {
-        if(0<=i && i<=2) {
+        if(i==0) {
             attron(COLOR_PAIR(3));
-            mvprintw(5+i, 66, "BEST PLAYER");
+            mvprintw(5+i, 66, "GOAT");
+            attroff(COLOR_PAIR(3));
+            attron(COLOR_PAIR(2));
+        }
+        else if(i==1) {
+            attron(COLOR_PAIR(3));
+            mvprintw(5+i, 66, "LEGEND");
+            attroff(COLOR_PAIR(3));
+            attron(COLOR_PAIR(2));
+        }
+        else if(i==2) {
+            attron(COLOR_PAIR(3));
+            mvprintw(5+i, 66, "BEST");
             attroff(COLOR_PAIR(3));
             attron(COLOR_PAIR(2));
         }
