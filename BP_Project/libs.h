@@ -11,8 +11,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <locale.h>
+#include <unistd.h>
 
 #define MAX_USERS 100
 #define MAX_LENGTH 50
+
 
 #endif

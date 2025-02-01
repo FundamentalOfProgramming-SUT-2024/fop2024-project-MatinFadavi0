@@ -11,7 +11,21 @@ typedef struct {
 } Pos;
 
 typedef struct {
-    char type[10];
+    int alive;
+    int type;
+    int room;
+    Pos position;
+    int radius;
+    int on;    
+    int health;
+    int damage;
+    int haunt;
+} Monster;
+
+typedef struct {
+    int type;
+    int locked;
+    int password;
     Pos room_pos;
     int room_size_v;
     int room_size_h;
@@ -22,40 +36,105 @@ typedef struct {
     int gold;
     int dark_gold;
     int ordinary_food;
+    int potion;
+    int monsters_count;
+    Monster monsters[8];
 } Room;
 
-
 typedef struct {
-    User Player;
+    User player;
     int difficulty;
     int player_color;
     Pos player_pos;
     Room rooms[6];
     int MAX_health;
+    int hungriness_rate;
     int players_health;
+    int players_extra_health;
     int players_score;
     int players_gold;
     int floor_number;
-    int players_hungriness;
+    int players_hunger;
     int players_ordinary_food;
+    int players_mace;
+    int players_dagger;
+    int players_magic_wand;
+    int players_arrow;
+    int players_sword;
+    int players_health_potion;
+    int players_speed_potion;
+    int players_speed;
+    int players_damage_potion;
     time_t start_time;
+    int k_lock;
+    time_t password_start_time;
+    int secret_doors_count;
+    Pos secret_doors[3];
+    time_t enchant_start_time;
+    int players_weapon;
+    int players_weapon_direction;
+    int players_steps;
+    int players_message_step;
+    int players_speed_step;
+    int players_health_step;
+    int players_damage_step;
+    Pos weapons[3];
+    int players_damage_rate;
 } Game;
 
+
+
 void GameLauncher(User *p, Game *g);
-void map(Game *g, int initial_room);
-int movement(char **screen, int **visited, int ch, Game *g);
-void ShowHealth(Game *g);
-void Corridor(char direction, Pos door1, Pos door2);
-void ShowScreen(char mode[], int **visited, char **screen);
+
+
+void MessageBar(Game *g, int floor, int score, int gold);
+void HEALTH_BAR(Game *g);
+void Food_Bar(Game *g);
+void Show_Password(int password);
+
+
+
+void FoodTab(Game *g);
+void WeaponTab(Game *g);
+void SpellTab(Game *g);
+
+
+
+
 void FloorGenerator(User *p, Game *g);
-int check_room(Room *rooms, int i, int j);
-void ShowMessage(char message[], int floor, int score, int gold);
-int Trap_Check(Room *rooms, int i, int j);
-void EndGame(User *p, Game *g);
-void ExitScreen(User *p);
-void Save_Game(User *p, Game *g, char **screen);
-void save_screen(User *p , Game *g);
-void not_saved_screen();
-void food_screen(Game *g);
+void map(Game *g, int initial_room);
+int Movement(chtype **screen, int **visited, int ch, Game *g);
+void Corridor(char direction, Pos door1, Pos door2);
+void ShowScreen(Game *g, char mode[], int **visited, chtype **screen);
+int RoomChecking(Room *rooms, int i, int j);
+int CheckTrap(Room *rooms, int i, int j);
+int check_secret_door(int count, Pos *secret_doors, int i, int j);
+void password_screen(Game *g);
+void EnchantRoom(User *p, Game *g);
+
+
+
+
+void Monsters_Movement(Game *g, chtype **screen);
+void handle_monsters(Game *g, chtype **screen);
+int CheckMonsters(Game *g, int i, int j);
+
+
+
+void Active_Weapons(Game *g, char ch, chtype **screen);
+void ThrowWeapon(Game *g, char ch, chtype **screen);
+int CheckWeapons(Pos *weapons, int i, int j);
+
+
+
+void terminate_game(int code, User *p, Game *g);
+void YOUWON(User *p);
+void YOULOST(User *p, Game *g);
+void Pause_Screen();
+void no_savefile_screen(User *p, Game *g);
+
+
+
+
 
 #endif

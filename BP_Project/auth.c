@@ -14,7 +14,8 @@ void save_users(User *p) {
     p->score = 0;
     p->gold = 0;
     p->count_games = 0;
-    fprintf(file, "%s\n%s\n%s\n%d\n%d\n%d\n", p->username, p->password, p->email, p->score, p->gold, p->count_games);
+    p->playtime = 0;
+    fprintf(file, "%s\n%s\n%s\n%d\n%d\n%d\n%.2lf\n", p->username, p->password, p->email, p->score, p->gold, p->count_games,p->playtime);
 
     fclose(file);
 }
@@ -199,6 +200,57 @@ void sign_in(User *p, Game *g) {
     }
 }
 
+int is_username_taken(const char *filename, const char *username) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Error opening file");
+        return -1;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        line[strcspn(line, "\n")] = 0;
+        if (strcmp(line, username) == 0) {
+            fclose(file);
+            return 1;
+        }
+        for (int i = 0; i < 5; i++) {
+            if (!fgets(line, sizeof(line), file)) break;
+        }
+    }
+
+    fclose(file);
+    return 0;
+}
+
+void generate_random_password(char *password, int length) {
+    const char lowercase[] = "abcdefghijklmnopqrstuvwxyz";
+    const char uppercase[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const char digits[] = "0123456789";
+    const char all_chars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    
+    srand(time(NULL));
+    
+
+    password[0] = lowercase[rand() % (sizeof(lowercase) - 1)];
+    password[1] = uppercase[rand() % (sizeof(uppercase) - 1)];
+    password[2] = digits[rand() % (sizeof(digits) - 1)];
+    
+
+    for(int i = 3; i < length; i++) {
+        password[i] = all_chars[rand() % (sizeof(all_chars) - 1)];
+    }
+    password[length] = '\0';
+    
+
+    for(int i = 0; i < length; i++) {
+        int j = rand() % length;
+        char temp = password[i];
+        password[i] = password[j];
+        password[j] = temp;
+    }
+}
+
 void sign_up(User *p, Game *g) {
     char username[MAX_LENGTH] = "";
     char password[MAX_LENGTH] = "";
@@ -212,8 +264,9 @@ void sign_up(User *p, Game *g) {
         mvprintw(row / 2 - 8, (col - 15) / 2, "Sign Up");
         mvprintw(row - 2, 2, "Press 'ESC' to go back");
 
-        char *fields[] = {"Username", "Password", "Email", "Submit"};
-        for (int i = 0; i < 4; i++) {
+
+        char *fields[] = {"Username", "Password", "Generate Password", "Email", "Submit"};
+        for (int i = 0; i < 5; i++) {
             if (i == highlight)
                 attron(A_REVERSE);
             mvprintw(row / 2 - 4 + i * 2, (col - 20) / 2, fields[i]);
@@ -221,23 +274,23 @@ void sign_up(User *p, Game *g) {
                 attroff(A_REVERSE);
         }
 
-        if (highlight < 3) {
+        if (highlight < 4) {
             move(row / 2 - 4 + highlight * 2, col / 2);
             if (highlight == 0)
                 printw("%s", username);
             else if (highlight == 1)
                 printw("%s", password);
-            else if (highlight == 2)
+            else if (highlight == 3)
                 printw("%s", email);
         }
 
         int ch = getch();
         switch (ch) {
             case KEY_UP:
-                highlight = (highlight + 3) % 4;
+                highlight = (highlight + 4) % 5;
                 break;
             case KEY_DOWN:
-                highlight = (highlight + 1) % 4;
+                highlight = (highlight + 1) % 5;
                 break;
             case 10:  // Enter key
                 if (highlight == 0) {  // Username
@@ -252,42 +305,40 @@ void sign_up(User *p, Game *g) {
                     move(row / 2 - 4 + highlight * 2, col / 2);
                     getstr(password);
                     noecho();
-                } else if (highlight == 2) {  // Email
+                } else if (highlight == 2) {  // Generate Password
+                    generate_random_password(password, 10);
+                    mvprintw(row / 2 - 4 + 1 * 2, col / 2, "            ");
+                    mvprintw(row / 2 - 4 + 1 * 2, col / 2, "%s", password);
+                } else if (highlight == 3) {  // Email
                     echo();
                     mvprintw(row / 2 - 4 + highlight * 2, col / 2, "                         ");
                     move(row / 2 - 4 + highlight * 2, col / 2);
                     getstr(email);
                     noecho();
-                } else if (highlight == 3) {  // Submit
+                } else if (highlight == 4) {  // Submit
                     if (strlen(username) == 0 || strlen(password) == 0 || strlen(email) == 0) {
-                        mvprintw(row / 2 + 4, (col - 30) / 2, "All fields are required!");
+                        mvprintw(row / 2 + 6, (col - 30) / 2, "All fields are required!");
                         getch();
                     } else if (!validate_email(email)) {
-                        mvprintw(row / 2 + 4, (col - 30) / 2, "Invalid email format!");
+                        mvprintw(row / 2 + 6, (col - 30) / 2, "Invalid email format!");
                         getch();
                     } else if (!valid_password(password)) {
-                        mvprintw(row / 2 + 4, (col - 30) / 2, "Password must be at least 7 characters, contain one uppercase letter, one lowercase letter, and one digit!");
+                        mvprintw(row / 2 + 6, (col - 30) / 2, "Password must be at least 7 characters, contain one uppercase, one lowercase and one digit!");
                         getch();
                     } else {
-                        int exists = 0;
-
-                            if (strcmp(p->username, username) == 0) {
-                                exists = 1;
-                            }
-                        
+                        int exists = is_username_taken("users.txt",username);
                         if (exists) {
-                            mvprintw(row / 2 + 4, (col - 30) / 2, "Username already exists!");
+                            mvprintw(row / 2 + 6, (col - 30) / 2, "Username already exists!");
                             getch();
                         } else {
                             strcpy(p->username, username);
                             strcpy(p->password, password);
                             strcpy(p->email, email);
                             save_users(p);
-                            mvprintw(row / 2 + 4, (col - 30) / 2, "User registered successfully!");
+                            mvprintw(row / 2 + 6, (col - 30) / 2, "User registered successfully!");
                             p->guest = 0;
                             pre_game_menu(p,g);
                             return;
-                            
                         }
                     }
                 }
@@ -299,7 +350,6 @@ void sign_up(User *p, Game *g) {
         }
     }
 }
-
 void sign_in_as_guest(User *p, Game *g) {
     int row, col;
     clear();
@@ -318,21 +368,30 @@ void draw_menu(User *p, Game *g) {
         getmaxyx(stdscr, row, col);
         init_pair(1, COLOR_MAGENTA,-1);
         attron(COLOR_PAIR(1));
-        mvprintw(LINES / 2 - 12, COLS / 2 - 23, " ____                                      ");
-        mvprintw(LINES / 2 - 11, COLS / 2 - 23, "/\\  _`\\                                    ");
-        mvprintw(LINES / 2 - 10, COLS / 2 - 23, "\\ \\ \\L\\ \\    ___      __   __  __     __   ");
-        mvprintw(LINES / 2 - 9, COLS / 2 - 23, " \\ \\ ,  /   / __`\\  /'_ `\\/\\ \\/\\ \\  /'__`\\ ");
-        mvprintw(LINES / 2 - 8, COLS / 2 - 23, "  \\ \\ \\\\ \\ /\\ \\L\\ \\/\\ \\L\\ \\ \\ \\_\\ \\/\\  __/ ");
-        mvprintw(LINES / 2 - 7, COLS / 2 - 23, "   \\ \\_\\ \\_\\ \\____/\\ \\____ \\ \\____/\\ \\____\\");
-        mvprintw(LINES / 2 - 6, COLS / 2 - 23, "    \\/_/\\/ /\\/___/  \\/___L\\ \\/___/  \\/____/");
-        mvprintw(LINES / 2 - 5, COLS / 2 - 23, "                      /\\____/              ");
-        mvprintw(LINES / 2 - 4, COLS / 2 - 23, "                      \\_/__/               ");
+
+    int start_x = COLS / 2 - 35;
+    int start_y = LINES / 2 - 12;
+
+    mvprintw(start_y, start_x, "      ___           ___           ___           ___           ___     ");
+    mvprintw(start_y + 1, start_x, "     /  /\\         /  /\\         /  /\\         /__/\\         /  /\\    ");
+    mvprintw(start_y + 2, start_x, "    /  /::\\       /  /::\\       /  /:/_        \\  \\:\\       /  /:/_   ");
+    mvprintw(start_y + 3, start_x, "   /  /:/\\:\\     /  /:/\\:\\     /  /:/ /\\        \\  \\:\\     /  /:/ /\\  ");
+    mvprintw(start_y + 4, start_x, "  /  /:/~/:/    /  /:/  \\:\\   /  /:/_/::\\   ___  \\  \\:\\   /  /:/ /:/_ ");
+    mvprintw(start_y + 5, start_x, " /__/:/ /:/___ /__/:/ \\__\\:\\ /__/:/__\\/\\:\\ /__/\\  \\__\\:\\ /__/:/ /:/ /\\");
+    mvprintw(start_y + 6, start_x, " \\  \\:\\/:::::/ \\  \\:\\ /  /:/ \\  \\:\\ /~~/:/ \\  \\:\\ /  /:/ \\  \\:\\/:/ /:/");
+    mvprintw(start_y + 7, start_x, "  \\  \\::/~~~~   \\  \\:\\  /:/   \\  \\:\\  /:/   \\  \\:\\  /:/   \\  \\::/ /:/ ");
+    mvprintw(start_y + 8, start_x, "   \\  \\:\\        \\  \\:\\/:/     \\  \\:\\/:/     \\  \\:\\/:/     \\  \\:\\/:/  ");
+    mvprintw(start_y + 9, start_x, "    \\  \\:\\        \\  \\::/       \\  \\::/       \\  \\::/       \\  \\::/   ");
+    mvprintw(start_y + 10, start_x, "     \\__/          \\__/          \\__/          \\__/          \\__/    ");
+
+    refresh();
+
         attroff(COLOR_PAIR(1));
         // Display choices at the bottom
         for (int i = 0; i < 4; i++) {
             if (i == highlight)
                 attron(A_REVERSE);
-            mvprintw(row - 20 + 2*i, (col - 20) / 2, choices[i]);
+            mvprintw(row - 23 + 2*i, (col - 20) / 2, choices[i]);
             if (i == highlight)
                 attroff(A_REVERSE);
         }

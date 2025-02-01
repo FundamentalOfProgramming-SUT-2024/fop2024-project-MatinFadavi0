@@ -10,7 +10,8 @@ typedef struct {
     int score;
     int gold;
     int count_games;
-    int experience;
+    double playtime;
+    time_t start_time;
     int guest;
 } User;
 
