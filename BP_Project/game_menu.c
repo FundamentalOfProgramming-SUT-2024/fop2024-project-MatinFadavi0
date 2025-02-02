@@ -63,7 +63,7 @@ void pre_game_menu(User *p, Game *g) {
                                 continue_previous_game(p,g);
                                 }
                             else {
-                                 no_savefile_screen(p,g);
+                                 not_saved_screen(p,g);
                                  }
                 } else if (highlight == 2) {  // Leaderboard
                     display_leaderboard(p,g);
@@ -98,8 +98,7 @@ void continue_previous_game(User *p , Game *g){
     mvprintw(row / 2 - 2, (col - 25) / 2, "Loading previous game...");
     mvprintw(row / 2, (col - 30) / 2, "Press any key to continue...");
     getch();
-    //save game later
-    pre_game_menu(p,g);
+// save game    
     
 }
                                                                     

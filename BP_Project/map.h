@@ -71,6 +71,7 @@ typedef struct {
     int secret_doors_count;
     Pos secret_doors[3];
     time_t enchant_start_time;
+    time_t treasure_start_time;
     int players_weapon;
     int players_weapon_direction;
     int players_steps;
@@ -97,20 +98,22 @@ void Show_Password(int password);
 void FoodTab(Game *g);
 void WeaponTab(Game *g);
 void SpellTab(Game *g);
+void show_key_guide();
 
 
 
 
 void FloorGenerator(User *p, Game *g);
 void map(Game *g, int initial_room);
-int Movement(chtype **screen, int **visited, int ch, Game *g);
+int Movement(chtype **screen, int **visited, int ch, Game *g,User *p);
 void Corridor(char direction, Pos door1, Pos door2);
 void ShowScreen(Game *g, char mode[], int **visited, chtype **screen);
 int RoomChecking(Room *rooms, int i, int j);
 int CheckTrap(Room *rooms, int i, int j);
-int check_secret_door(int count, Pos *secret_doors, int i, int j);
+int CheckEnchantDoor(int count, Pos *secret_doors, int i, int j);
 void password_screen(Game *g);
 void EnchantRoom(User *p, Game *g);
+void TreasureRoom(User *p, Game *g);
 
 
 
@@ -131,10 +134,14 @@ void terminate_game(int code, User *p, Game *g);
 void YOUWON(User *p);
 void YOULOST(User *p, Game *g);
 void Pause_Screen();
-void no_savefile_screen(User *p, Game *g);
+void not_saved_screen(User *p, Game *g);
 
 
 
+
+void SAVEGAME(User *p, Game *g, chtype **screen, int **visited);
+void SaveLauncher(User *p, Game *g);
+void SaveFloor(User *p, Game *g, chtype **screen, int **visited);
 
 
 #endif
