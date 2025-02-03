@@ -91,6 +91,7 @@ void start_new_game(User *p , Game *g) {
     getch();
     GameLauncher(p,g);
 }
+
 void continue_previous_game(User *p , Game *g){
     int row, col;
     clear();
@@ -98,7 +99,7 @@ void continue_previous_game(User *p , Game *g){
     mvprintw(row / 2 - 2, (col - 25) / 2, "Loading previous game...");
     mvprintw(row / 2, (col - 30) / 2, "Press any key to continue...");
     getch();
-// save game    
+    SaveLauncher(p,g);
     
 }
                                                                     
@@ -444,8 +445,6 @@ void GameLauncher(User *p, Game *g) {
     init_pair(6, COLOR_CYAN, COLOR_BLACK);
     init_pair(7, 208, COLOR_BLACK); //Orange
     init_pair(8, 8, COLOR_BLACK); //Gray
-    init_pair(9, 13, COLOR_BLACK); //Pink
-    init_pair(10, 2, COLOR_BLACK); //Dark Green
 
     if(g->difficulty) {
         g->MAX_health = 5;
@@ -475,7 +474,6 @@ void GameLauncher(User *p, Game *g) {
     g->players_damage_potion = 0;
     g->start_time = time(NULL);
     g->players_steps = 0;
-    g->players_message_step = 0;
     g->players_speed_step = -15;
     g->players_health_step = -20;
     g->players_damage_step = -5;

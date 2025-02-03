@@ -99,7 +99,7 @@ void forgot_password(User *p) {
 void sign_in(User *p, Game *g) {
     char username[MAX_LENGTH] = "";
     char password[MAX_LENGTH] = "";
-    char score[50]; char gold[50]; char count_games[50];
+    char score[50]; char gold[50]; char count_games[50]; char playtime[50];
     int highlight = 0;
     int row, col;
 
@@ -176,7 +176,8 @@ void sign_in(User *p, Game *g) {
                                 fgets(score, 50, file); score[strcspn(score, "\n")] = '\0';
                                 fgets(gold, 50, file); gold[strcspn(gold, "\n")] = '\0';
                                 fgets(count_games, 50, file); count_games[strcspn(count_games, "\n")] = '\0';
-                                p->score = str_to_num(score); p->gold = str_to_num(gold); p->count_games = str_to_num(count_games);
+                                fgets(playtime, 50, file); playtime[strcspn(playtime, "\n")] = '\0';
+                                p->score = str_to_num(score); p->gold = str_to_num(gold); p->count_games = str_to_num(count_games); p->playtime = strtod(playtime , NULL);
                                 pre_game_menu(p, g);
                                 
                                 found = 1;

@@ -75,7 +75,6 @@ typedef struct {
     int players_weapon;
     int players_weapon_direction;
     int players_steps;
-    int players_message_step;
     int players_speed_step;
     int players_health_step;
     int players_damage_step;
@@ -137,7 +136,7 @@ void Pause_Screen();
 void not_saved_screen(User *p, Game *g);
 
 
-//Use This Later For Save Game!
+
 
 void SAVEGAME(User *p, Game *g, chtype **screen, int **visited);
 void SaveLauncher(User *p, Game *g);
