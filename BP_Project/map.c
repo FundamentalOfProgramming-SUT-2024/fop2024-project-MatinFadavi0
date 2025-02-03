@@ -1485,10 +1485,12 @@ void EnchantRoom(User *p, Game *g) {
         for(int n=0; n<2*m+2; n++) {
             if(rand()%20 == 0 && mvinch(5+m,x_center-m+n) == '.' && count_gold<gold) {
                 mvprintw(5+m,x_center-m+n,"*");
+                mvprintw( 43 - m , x_center - m + n, "*");
                 count_gold++;
             }
             if(rand()%20 == 0 && mvinch(5+m,x_center-m+n) == '.' && count_ordinary_food<ordinary_food) {
                 mvprintw(5+m, x_center-m+n,"f");
+                mvprintw( 43 - m , x_center - m + n, "f");
                 count_ordinary_food++;
             }
             if(rand()%20 == 0 && mvinch(5+m,x_center-m+n) == '.' && count_potion<potion) {
@@ -1496,16 +1498,19 @@ void EnchantRoom(User *p, Game *g) {
                 if(num%3 == 0) {
                     attron(COLOR_PAIR(3));attron(A_REVERSE);
                     mvprintw(5+m, x_center-m+n,"!");
+                    mvprintw( 43 - m , x_center - m + n, "!");
                     attroff(COLOR_PAIR(3));attroff(A_REVERSE);
                 }
                 else if(num%3 == 1) {
                     attron(COLOR_PAIR(1));
                     mvprintw(5+m, x_center-m+n,"o");
+                    mvprintw( 43 - m , x_center - m + n, "o");   
                     attroff(COLOR_PAIR(1));
                 }
                 else if(num%3 == 2) {
                     attron(COLOR_PAIR(2));
                     mvprintw(5+m, x_center-m+n,"6");
+                    mvprintw( 43 - m , x_center - m + n, "6");
                     attroff(COLOR_PAIR(2));
                 }
                 count_potion++;
@@ -1517,28 +1522,28 @@ void EnchantRoom(User *p, Game *g) {
     for(m; m>=0; m--) {
         for(int n=0; n<2*m+2; n++) {
             if(rand()%20 == 0 && mvinch(5+m,x_center-m+n) == '.' && count_gold<gold) {
-                mvprintw(5+m,x_center-m+n,"*");
+                mvprintw( 43 - m , x_center - m + n, "*");
                 count_gold++;
             }
             if(rand()%20 == 0 && mvinch(5+m,x_center-m+n) == '.' && count_ordinary_food<ordinary_food) {
-                mvprintw(5+m, x_center-m+n,"f");
+                mvprintw( 43 - m , x_center - m + n, "f");
                 count_ordinary_food++;
             }
             if(rand()%20 == 0 && mvinch(5+m,x_center-m+n) == '.' && count_potion<potion) {
-                int num = rand()%3;
+                int num = rand()%3 + rand()%3;
                 if(num%3 == 0) {
                     attron(COLOR_PAIR(3));attron(A_REVERSE);
-                    mvprintw(5+m, x_center-m+n,"!");
+                    mvprintw( 43 - m , x_center - m + n, "!");
                     attroff(COLOR_PAIR(3));attroff(A_REVERSE);
                 }
                 else if(num%3 == 1) {
                     attron(COLOR_PAIR(1));
-                    mvprintw(5+m, x_center-m+n,"o");
+                    mvprintw( 43 - m , x_center - m + n, "o");   
                     attroff(COLOR_PAIR(1));
                 }
                 else if(num%3 == 2) {
                     attron(COLOR_PAIR(2));
-                    mvprintw(5+m, x_center-m+n,"6");
+                    mvprintw( 43 - m , x_center - m + n, "6");
                     attroff(COLOR_PAIR(2));
                 }
                 count_potion++;
