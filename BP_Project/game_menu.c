@@ -7,7 +7,7 @@
 
 void pre_game_menu(User *p, Game *g) {
     
-    char *choices[] = {"New Game", "Resume Game", "Leaderboard", "Settings", "Back"};
+    char *choices[] = {"New Game", "Resume Game", "Leaderboard", "Settings", "Profile", "Back"};
     int highlight = 0, choice, row, col;
 
     curs_set(0);
@@ -38,7 +38,7 @@ void pre_game_menu(User *p, Game *g) {
         attroff(COLOR_PAIR(1));
         mvprintw(row - 2, 2, "Press 'ESC' to go back");
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             if (i == highlight)
                 attron(A_REVERSE);
             mvprintw(row / 2 + i * 2 + 4, (col - 20) / 2, choices[i]);
@@ -49,10 +49,10 @@ void pre_game_menu(User *p, Game *g) {
         choice = getch();
         switch (choice) {
             case KEY_UP:
-                highlight = (highlight + 4) % 5;
+                highlight = (highlight + 5) % 6;
                 break;
             case KEY_DOWN:
-                highlight = (highlight + 1) % 5;
+                highlight = (highlight + 1) % 6;
                 break;
             case '\n':
                 if (highlight == 0) {  // New Game
@@ -61,15 +61,16 @@ void pre_game_menu(User *p, Game *g) {
                             FILE *last_saved_game = fopen(txt_format(p->username),"r");
                             if(last_saved_game) {
                                 continue_previous_game(p,g);
-                                }
-                            else {
-                                 not_saved_screen(p,g);
-                                 }
+                            } else {
+                                not_saved_screen(p,g);
+                            }
                 } else if (highlight == 2) {  // Leaderboard
                     display_leaderboard(p,g);
                 } else if (highlight == 3) {  // Settings
                     settings_menu(p,g);
-                } else if (highlight == 4) {  // Back
+                } else if (highlight == 4) {  // Profile
+                    profile(p,g);
+                } else if (highlight == 5) {  // Back
                     draw_menu(p,g);
                 }
                 break;
@@ -79,6 +80,25 @@ void pre_game_menu(User *p, Game *g) {
                 break;
         }
     }
+}
+
+
+void profile(User *p, Game *g){
+    clear();
+    int start_x = 5;
+    int start_y = 2;
+
+
+    mvprintw(start_y, start_x, "===== Profile =====");
+
+
+    mvprintw(start_y + 2, start_x, "Username: %s", p->username);
+    mvprintw(start_y + 3, start_x, "Top Score: %d", p->score);
+    mvprintw(start_y + 4, start_x, "Top Gold: %d", p->gold);
+    mvprintw(start_y + 5, start_x, "Game Counts: %d", p->count_games);
+    mvprintw(start_y + 6, start_x, "Playtime: %.2lf Min", p->playtime);
+    getch();
+    pre_game_menu(p,g);
 }
 
 
@@ -138,7 +158,7 @@ void display_leaderboard(User *p , Game *g){
     int scores[100]; 
     int golds[100]; 
     int game_counts[100]; 
-    char exps[100][10] = {0};
+    char exps[100][50];
     int arr[] = {0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20};
     int *ptr_arr = arr;
 
@@ -165,9 +185,7 @@ void display_leaderboard(User *p , Game *g){
             game_counts[count] = str_to_num(line);
         }
         else if (i % 7 == 6) {
-            for ( int i = 0 ; i < 10 ; i++){
-                exps[count][i] = line[i];
-            }
+            strcpy(exps[count], line);
         }
         i++;
     }
@@ -448,7 +466,7 @@ void GameLauncher(User *p, Game *g) {
 
     if(g->difficulty) {
         g->MAX_health = 5;
-        g->hungriness_rate = 2;
+        g->hungriness_rate = 1;
     }
     else {
         g->MAX_health = 10;

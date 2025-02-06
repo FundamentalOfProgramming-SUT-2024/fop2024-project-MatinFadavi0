@@ -2532,7 +2532,8 @@ void Pause_Screen(User *p, Game *g, chtype **screen, int **visited) {
                     fclose(users);
                     fclose(temp_file);
                     remove("users.txt");
-                    
+                    rename("temp.txt","users.txt");
+
                 endwin();
                 exit(0);
             }

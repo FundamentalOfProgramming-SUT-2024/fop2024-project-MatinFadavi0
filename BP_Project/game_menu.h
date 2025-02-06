@@ -7,5 +7,6 @@ void continue_previous_game();
 void display_leaderboard();
 void settings_menu();
 void GameLauncher(User *p, Game *g);
+void profile(User *p, Game *g);
 
 #endif
