@@ -358,6 +358,17 @@ void show_key_guide() {
 //////////////////////////////////////////////////////// Map Generation /////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////// Map Generation /////////////////////////////////////////////////////////////////////////
 
+void handle_speed_boost(Game *g){
+        g->players_speed = 2;
+        g->speed_boost_time = time(NULL);
+        strcpy(message, "Speed Boost Activated!");
+    
+    if (g->players_speed == 2 && difftime(time(NULL), g->speed_boost_time) > 5) {
+        g->players_speed = 1;
+        strcpy(message, "Speed Boost Ended!");
+    }
+}
+
 
 void FloorGenerator(User *p, Game *g) {
     srand(time(NULL));
@@ -784,6 +795,10 @@ void FloorGenerator(User *p, Game *g) {
         }
         else if ( ch == 'k'){
             show_key_guide();
+        }
+        else if ( ch == 't'){
+            g->speed_boost_time = time(NULL);  // مقداردهی اولیه
+            handle_speed_boost(g);
         }
 
         handle_monsters(g, screen);

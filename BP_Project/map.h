@@ -72,6 +72,7 @@ typedef struct {
     Pos secret_doors[3];
     time_t enchant_start_time;
     time_t treasure_start_time;
+    time_t speed_boost_time; 
     int players_weapon;
     int players_weapon_direction;
     int players_steps;
